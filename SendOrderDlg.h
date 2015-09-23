@@ -32,6 +32,11 @@ public:
 	unsigned int m_nKRXCodes;					// Number of codes in "SendOrder\config.ini"
 	unsigned int m_piKRXCodes[MAX_CODE_N];		// Array of codes, parsed
 
+	double m_dBuyFee0;
+	double m_dSelFee0;
+	double m_dSelTax0;
+	double m_dSelTax1;
+
 	CMutex m_mutexRealData;
 	float  m_pPr   [MAX_CODE_N];
 	_int64 m_pSumPQ[MAX_CODE_N];
@@ -61,7 +66,7 @@ public:
 
 	// For synchronization and rate limiting of Tr & Order requests
 	void InitTr();
-	long WaitTr();
+	long WaitTr(bool bTimeout = false);
 	void EndTr(long lPrevNext);
 
 	// TCP server
@@ -78,6 +83,8 @@ private:
 	bool m_bLockTr; // not to be modified directly
 	bool m_bInitializing;
 	bool m_bSORunning;
+
+	int m_iOrdTrEventCnt;
 
 	int m_nTrCntThisTick;
 

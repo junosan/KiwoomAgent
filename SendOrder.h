@@ -19,7 +19,7 @@
 #define SELL_FEE_KIWOOM			0.0035
 #define SELL_TAX_COMBINED		0.003
 
-#define DISP_VERBOSE			0
+#define DISP_VERBOSE			1
 #define FCN_LOG					0
 
 #define MAX_CODE_N				100
@@ -29,6 +29,7 @@
 #define TR_RATE_CAP				5
 #define BLOCK_WAIT_MS			30
 #define OVERFLOW_WAIT_MS		200
+#define ORD_TIMEOUT_MS			5000
 
 #define TCP_PASSWORD			"sendorder"
 #define TCP_BACKLOG_SIZE		8
@@ -66,6 +67,7 @@
 #define OP_FID_주문가격			901
 #define OP_FID_미체결수량		902			
 #define OP_FID_원주문번호		904			// %07d
+#define OP_FID_단위체결가		914			// 반드시 주문가격과 같지는 않음에 유의
 #define OP_FID_단위체결량		915			// 주문의 누적 체결량이 아닌 이벤트 자체의 체결량
 
 
