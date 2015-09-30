@@ -14,16 +14,13 @@
 #include <fstream>
 #include <WinSock2.h>
 #include <Ws2tcpip.h>
-
-#define BUY_FEE_KIWOOM			0.0035
-#define SELL_FEE_KIWOOM			0.0035
-#define SELL_TAX_COMBINED		0.003
+#include <math.h>
 
 #define DISP_VERBOSE			1
 #define FCN_LOG					0
 
 #define MAX_CODE_N				100
-#define ORD_Q_SIZE				64
+#define ORD_Q_SIZE				(1 << 8)
 
 #define REFRESH_INTERVAL_SEC	10
 #define TR_RATE_CAP				5
@@ -33,7 +30,7 @@
 
 #define TCP_PASSWORD			"sendorder"
 #define TCP_BACKLOG_SIZE		8
-#define TCP_BUF_SIZE			4096
+#define TCP_BUF_SIZE			(1 << 16)
 
 
 #include "KHOpenAPICtrl.h"

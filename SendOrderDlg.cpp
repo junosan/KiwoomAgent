@@ -132,7 +132,7 @@ BOOL CSendOrderDlg::OnInitDialog()
 
 	// Re-write m_sKRXCodes only with valid codes
 	m_sKRXCodes[0] = '\0';
-	for (int iC = 0; iC < m_nKRXCodes; iC++)
+	for (unsigned int iC = 0; iC < m_nKRXCodes; iC++)
 	{
 		sprintf_s (pcBuf, _T("%06d"), m_piKRXCodes[iC]);
 		strcat_s (m_sKRXCodes, pcBuf);
@@ -142,12 +142,20 @@ BOOL CSendOrderDlg::OnInitDialog()
 
 	::GetPrivateProfileString (_T("SENDORDER"), _T("BUY_FEE0"), _T("0.00015"), pcBuf, nBufSize, theApp.m_sAppPath + _T("\\SendOrder\\config.ini"));
 	sscanf_s (pcBuf, _T("%lf"), &m_dBuyFee0);
+	sItem.Format (_T("f_b   = %.5f"), m_dBuyFee0);
+	DisplayMsg (sItem);
 	::GetPrivateProfileString (_T("SENDORDER"), _T("SEL_FEE0"), _T("0.00015"), pcBuf, nBufSize, theApp.m_sAppPath + _T("\\SendOrder\\config.ini"));
 	sscanf_s (pcBuf, _T("%lf"), &m_dSelFee0);
+	sItem.Format (_T("f_s   = %.5f"), m_dSelFee0);
+	DisplayMsg (sItem);
 	::GetPrivateProfileString (_T("SENDORDER"), _T("SEL_TAX0"), _T("0.0015" ), pcBuf, nBufSize, theApp.m_sAppPath + _T("\\SendOrder\\config.ini"));
 	sscanf_s (pcBuf, _T("%lf"), &m_dSelTax0);
+	sItem.Format (_T("f_st0 = %.5f"), m_dSelTax0);
+	DisplayMsg (sItem);
 	::GetPrivateProfileString (_T("SENDORDER"), _T("SEL_TAX1"), _T("0.0015" ), pcBuf, nBufSize, theApp.m_sAppPath + _T("\\SendOrder\\config.ini"));
 	sscanf_s (pcBuf, _T("%lf"), &m_dSelTax1);
+	sItem.Format (_T("f_st1 = %.5f"), m_dSelTax1);
+	DisplayMsg (sItem);
 
 	::GetPrivateProfileString(_T("SENDORDER"), _T("POS"), _T("100 100"), pcBuf, nBufSize, theApp.m_sAppPath + _T("\\SendOrder\\config.ini"));
 	int x, y;
@@ -510,7 +518,7 @@ void CSendOrderDlg::OnReceiveRealData(LPCTSTR sRealKey, LPCTSTR _sRealType, LPCT
 
 	if ((iCodeInd != m_nKRXCodes) && (_T("주식호가잔량") == sRealType))
 	{
-		if (lockRealData.Lock())
+		if ((abs(_ttoi(theApp.m_cKHOpenAPI.GetCommRealData(sRealKey, 41))) > 0) && lockRealData.Lock())
 		{
 			for (int i = 0; i < 10; i++)
 			{
@@ -809,11 +817,12 @@ void CSendOrderDlg::OnReceiveChejanData(LPCTSTR _sGubun, long nItemCnt, LPCTSTR 
 
 								if (sOrdCat == _T("+매수"))
 								{
-									m_iBal -= (_int64)iOrdP * iOrdQ + (_int64)((_int64)iOrdP * iOrdQ * BUY_FEE_KIWOOM);
-
+									_int64 iDeltaB = (_int64)iOrdP * iOrdQ + (_int64)round ((_int64)iOrdP * iOrdQ * m_dBuyFee0);
+									m_iBal -= iDeltaB;
+									
 									if (DISP_VERBOSE)
 									{
-										sDisp.Format(_T("Subtract balance %12I64d"), (_int64)iOrdP * iOrdQ + (_int64)((_int64)iOrdP * iOrdQ * BUY_FEE_KIWOOM));
+										sDisp.Format(_T("Subtract balance %12I64d"), iDeltaB);
 										DisplayMain(sDisp, false);
 									}
 								}
@@ -824,14 +833,15 @@ void CSendOrderDlg::OnReceiveChejanData(LPCTSTR _sGubun, long nItemCnt, LPCTSTR 
 										if (iOgOrdNo == m_pOrdNo[iCodeInd][iQInd])
 										{
 											int iOgOrdP = m_pOrdP[iCodeInd][iQInd];
-											m_iBal -= (_int64)(iOrdP - iOgOrdP) * iOrdQ + (_int64)((_int64)(iOrdP - iOgOrdP) * iOrdQ * BUY_FEE_KIWOOM);
+											_int64 iDeltaB = (_int64)(iOrdP - iOgOrdP) * iOrdQ + (_int64)round ((_int64)(iOrdP - iOgOrdP) * iOrdQ * m_dBuyFee0);
+											m_iBal -= iDeltaB;
 
 											if (DISP_VERBOSE)
 											{
 												if (iOrdP > iOgOrdP)
-													sDisp.Format(_T("Subtract balance %12I64d"), (_int64)(iOrdP - iOgOrdP) * iOrdQ + (_int64)((_int64)(iOrdP - iOgOrdP) * iOrdQ * BUY_FEE_KIWOOM));
+													sDisp.Format(_T("Subtract balance %12I64d"), iDeltaB);
 												else
-													sDisp.Format(_T("Add balance %12I64d"), (_int64)(iOgOrdP - iOrdP) * iOrdQ + (_int64)((_int64)(iOgOrdP - iOrdP) * iOrdQ * BUY_FEE_KIWOOM));
+													sDisp.Format(_T("Add balance %12I64d"), -iDeltaB);
 												DisplayMain(sDisp, false);
 											}
 
@@ -855,11 +865,12 @@ void CSendOrderDlg::OnReceiveChejanData(LPCTSTR _sGubun, long nItemCnt, LPCTSTR 
 								iOrdP = m_pOrdP[iCodeInd][iQInd];
 								if (sOrdCat == _T("매수취소"))
 								{
-									m_iBal += (_int64)iOrdP * iOrdQ + (_int64)((_int64)iOrdP * iOrdQ * BUY_FEE_KIWOOM);
+									_int64 iDeltaB = (_int64)iOrdP * iOrdQ + (_int64)round ((_int64)iOrdP * iOrdQ * m_dBuyFee0);
+									m_iBal += iDeltaB;
 
 									if (DISP_VERBOSE)
 									{
-										sDisp.Format(_T("Add balance %12I64d"), (_int64)iOrdP * iOrdQ + (_int64)((_int64)iOrdP * iOrdQ * BUY_FEE_KIWOOM));
+										sDisp.Format(_T("Add balance %12I64d"), iDeltaB);
 										DisplayMain(sDisp, false);
 									}
 								}
@@ -918,21 +929,25 @@ void CSendOrderDlg::OnReceiveChejanData(LPCTSTR _sGubun, long nItemCnt, LPCTSTR 
 							m_pOrdQ[iCodeInd][iQInd] = iOrdQ;
 							if (((sOrdCat == _T("+매수")) || (sOrdCat == _T("+매수정정"))) && (iOrdP > iDeltaP))
 							{
-								m_iBal += (_int64)(iOrdP - iDeltaP) * iDeltaQ + (_int64)((_int64)(iOrdP - iDeltaP) * iDeltaQ * BUY_FEE_KIWOOM);
+								_int64 iDeltaB = (_int64)(iOrdP - iDeltaP) * iDeltaQ + (_int64)round ((_int64)(iOrdP - iDeltaP) * iDeltaQ * m_dBuyFee0);
+								m_iBal += iDeltaB;
 
 								if (DISP_VERBOSE)
 								{
-									sDisp.Format(_T("Add balance %12I64d"), (_int64)(iOrdP - iDeltaP) * iDeltaQ + (_int64)((_int64)(iOrdP - iDeltaP) * iDeltaQ * BUY_FEE_KIWOOM));
+									sDisp.Format(_T("Add balance %12I64d"), iDeltaB);
 									DisplayMain(sDisp, false);
 								}
 							}
 							if ((sOrdCat == _T("-매도")) || (sOrdCat == _T("-매도정정")))
 							{
-								m_iBal += (_int64)iDeltaP * iDeltaQ - (_int64)((_int64)iDeltaP * iDeltaQ * (SELL_FEE_KIWOOM + SELL_TAX_COMBINED));
+								_int64 iDeltaB = (_int64)iDeltaP * iDeltaQ - (  (_int64)round ((_int64)iDeltaP * iDeltaQ * m_dSelFee0) +
+																				(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax0) +
+																				(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax1) );
+								m_iBal += iDeltaB;
 
 								if (DISP_VERBOSE)
 								{
-									sDisp.Format(_T("Add balance %12I64d"), (_int64)iDeltaP * iDeltaQ - (_int64)((_int64)iDeltaP * iDeltaQ * (SELL_FEE_KIWOOM + SELL_TAX_COMBINED)));
+									sDisp.Format(_T("Add balance %12I64d"), iDeltaB);
 									DisplayMain(sDisp, false);
 								}
 							}
@@ -1407,7 +1422,7 @@ void CSendOrderDlg::SendOrder(LPCTSTR _sCommand)
 				// Correct lQuant for insufficient fund (sOrdType == b)
 				if (lOrderType == 1)
 				{
-					_int64 iMaxQ64 = (_int64)floor(m_iBal / (lPrice * (1 + BUY_FEE_KIWOOM)));
+					_int64 iMaxQ64 = (_int64)floor(m_iBal / (lPrice * (1 + m_dBuyFee0)));
 					if (iMaxQ64 > 0x7FFFFFFF) iMaxQ64 = 0x7FFFFFFF;
 					int iMaxQ = (int)iMaxQ64;
 
@@ -1468,7 +1483,7 @@ void CSendOrderDlg::SendOrder(LPCTSTR _sCommand)
 				// Correct nQuantLeft for insufficient fund (sOrdType == mb)
 				if ((lOrderType == 5) && (lModPrice > lPrice))
 				{
-					_int64 iMaxQ64 = (_int64)floor(m_iBal / ((lModPrice - lPrice) * (1 + BUY_FEE_KIWOOM)));
+					_int64 iMaxQ64 = (_int64)floor (m_iBal / ((lModPrice - lPrice) * (1 + m_dBuyFee0)));
 					if (iMaxQ64 > 0x7FFFFFFF) iMaxQ64 = 0x7FFFFFFF;
 					int iMaxQ = (int)iMaxQ64;
 
@@ -1674,13 +1689,22 @@ int CSendOrderDlg::DisplayBalance()
 		_int64 iBalTot = m_iBal;
 		for (unsigned int i = 0; i < m_nKRXCodes; i++)
 		{
-			iBalTot += (_int64)m_pTbP[i][10] * m_pStkCnt[i] - (_int64)((_int64)m_pTbP[i][10] * m_pStkCnt[i] * (SELL_FEE_KIWOOM + SELL_TAX_COMBINED));
+			int iDeltaP = m_pTbP[i][10];
+			int iDeltaQ = m_pStkCnt[i];
+			iBalTot += (_int64)iDeltaP * iDeltaQ - (	(_int64)round ((_int64)iDeltaP * iDeltaQ * m_dSelFee0) +
+														(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax0) +
+														(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax1) );
 			for (int j = 0; j < m_pOrdCnt[i]; j++)
 			{
 				if (m_pOrdNo[i][j] > 0)
-					iBalTot += (_int64)m_pOrdP[i][j] * m_pOrdQ[i][j] + (_int64)((_int64)m_pOrdP[i][j] * m_pOrdQ[i][j] * BUY_FEE_KIWOOM);
+					iBalTot += (_int64)m_pOrdP[i][j] * m_pOrdQ[i][j] + (_int64)round ((_int64)m_pOrdP[i][j] * m_pOrdQ[i][j] * m_dBuyFee0);
 				else
-					iBalTot += (_int64)m_pTbP[i][10] * m_pOrdQ[i][j] - (_int64)((_int64)m_pTbP[i][10] * m_pOrdQ[i][j] * (SELL_FEE_KIWOOM + SELL_TAX_COMBINED));;
+				{
+					iDeltaQ = m_pOrdQ[i][j];
+					iBalTot += (_int64)iDeltaP * iDeltaQ - ((_int64)round ((_int64)iDeltaP * iDeltaQ * m_dSelFee0) +
+															(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax0) +
+															(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax1) );
+				}
 			}
 		}
 		sDisp.Format(_T("        %12I64d (eval)"), iBalTot);

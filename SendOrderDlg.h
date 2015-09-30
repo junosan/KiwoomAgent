@@ -92,6 +92,8 @@ private:
 	FILE *m_pfFcnLog;
 	void WriteFcnLog(LPCTSTR sText);
 
+	static inline double round (double val) {return floor (val + 0.5);}
+
 // Implementation
 protected:
 	HICON m_hIcon;
