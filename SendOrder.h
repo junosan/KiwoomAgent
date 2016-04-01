@@ -19,8 +19,8 @@
 #define DISP_VERBOSE			1
 #define FCN_LOG					0
 
-#define MAX_CODE_N				100
-#define ORD_Q_SIZE				(1 << 8)
+#define MAX_CODE_N				200
+#define ORD_Q_SIZE				(1 << 12)
 
 #define REFRESH_INTERVAL_SEC	10
 #define TR_RATE_CAP				5

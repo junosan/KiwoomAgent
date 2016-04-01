@@ -27,7 +27,7 @@ public:
 	CMapStringToString m_mapFIDName;
 	static CSendOrderDlg *pThis;
 
-	static const unsigned int m_ncKRXCodesBufSize = 1024;
+	static const unsigned int m_ncKRXCodesBufSize = 4096;
 	TCHAR m_sKRXCodes[m_ncKRXCodesBufSize];		// String of ;-separated KRX codes from config.ini
 	unsigned int m_nKRXCodes;					// Number of codes in "SendOrder\config.ini"
 	unsigned int m_piKRXCodes[MAX_CODE_N];		// Array of codes, parsed
@@ -48,9 +48,13 @@ public:
 	_int64 m_iBal;							// corresponds to d+2출금가능금액
 	int m_pStkCnt[MAX_CODE_N];				// number of stocks in possession and not in queue for sale (= 주문가능수량)
 	int m_pOrdCnt[MAX_CODE_N];				// number of orders (buy + sell) in queue 
-	int m_pOrdNo[MAX_CODE_N][ORD_Q_SIZE];	// packed from left, leftmost first, + means buy, - means sell
-	int m_pOrdP [MAX_CODE_N][ORD_Q_SIZE];
-	int m_pOrdQ [MAX_CODE_N][ORD_Q_SIZE];	// (= 미체결수량)
+	static int m_pOrdNo[MAX_CODE_N][ORD_Q_SIZE];	// packed from left, leftmost first, + means buy, - means sell
+	static int m_pOrdP [MAX_CODE_N][ORD_Q_SIZE];
+	static int m_pOrdQ [MAX_CODE_N][ORD_Q_SIZE];	// (= 미체결수량)
+
+	_int64 m_iSumBuy;
+	_int64 m_iSumSell;
+	_int64 m_iSumFeeTax;
 
 	static const UINT_PTR m_ncFlushTimerID = 1;
 	static VOID CALLBACK TimerCallback(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
@@ -80,7 +84,8 @@ private:
 	bool m_bStarted;
 	bool m_bLoggedIn;
 	bool m_bConnected;
-	bool m_bLockTr; // not to be modified directly
+	bool m_bLockTr;   // not to be modified directly
+	bool m_bTimedOut; // not to be modified directly
 	bool m_bInitializing;
 	bool m_bSORunning;
 
@@ -122,4 +127,5 @@ public:
 	void OnReceiveChejanData(LPCTSTR sGubun, long nItemCnt, LPCTSTR sFIdList);
 	CListBox m_listBal;
 	CButton m_ckEnableTR;
+	CButton m_ckEnableMainLog;
 };

@@ -16,7 +16,9 @@
 
 // Static variables
 CSendOrderDlg *CSendOrderDlg::pThis;
-
+int CSendOrderDlg::m_pOrdNo[MAX_CODE_N][ORD_Q_SIZE];	// packed from left, leftmost first, + means buy, - means sell
+int CSendOrderDlg::m_pOrdP [MAX_CODE_N][ORD_Q_SIZE];
+int CSendOrderDlg::m_pOrdQ [MAX_CODE_N][ORD_Q_SIZE];
 
 CSendOrderDlg::CSendOrderDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CSendOrderDlg::IDD, pParent)
@@ -36,6 +38,7 @@ void CSendOrderDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST_MSG, m_listMsg);
 	DDX_Control(pDX, IDC_LIST_BAL, m_listBal);
 	DDX_Control(pDX, IDC_CHECK_ENABLE_TR, m_ckEnableTR);
+	DDX_Control(pDX, IDC_CHECK_ENABLE_MAINLOG, m_ckEnableMainLog);
 }
 
 BEGIN_MESSAGE_MAP(CSendOrderDlg, CDialogEx)
@@ -70,6 +73,7 @@ BOOL CSendOrderDlg::OnInitDialog()
 	DisplayUpdatedTime();
 
 	m_lContTr = 0;
+	m_iBal = 0;
 	m_bStarted = false;
 	m_bInitializing = false;
 	m_bLoggedIn = false;
@@ -98,6 +102,7 @@ BOOL CSendOrderDlg::OnInitDialog()
 	::GetPrivateProfileString(_T("SENDORDER"), _T("TCP_PORT"), _T("50505"), pcBuf, nBufSize, theApp.m_sAppPath + _T("\\SendOrder\\config.ini"));
 	sscanf_s(pcBuf, _T("%d"), &m_iTCPPort);
 
+	m_nKRXCodes = 0;
 	::GetPrivateProfileString(_T("SENDORDER"), _T("KRX_CODE"), _T("000660"), m_sKRXCodes, m_ncKRXCodesBufSize, theApp.m_sAppPath + _T("\\SendOrder\\config.ini"));
 	CString sItem;
 	int i = 0;
@@ -250,7 +255,7 @@ void CSendOrderDlg::OnEventConnect(long nErrCode)
 		sTemp.Format(_T("Account number %s"), m_sAccNo);
 		DisplayMsg(sTemp);
 
-		DisplayMsg(_T("IMPORTANT: Enter account password before proceeding"));
+		DisplayMsg(_T("IMPORTANT: Enter account password NOW"));
 			
 		m_btLogin.EnableWindow(FALSE);
 		if (m_bConnected)
@@ -460,16 +465,19 @@ void CSendOrderDlg::DisplayUpdatedTime()
 
 void CSendOrderDlg::DisplayMain(LPCTSTR sDisp, bool bRefresh)
 {
-	CString str = CTime::GetCurrentTime().Format(_T("%H:%M:%S "));
-	str.Append(sDisp);
-	m_listMain.AddString(str);
-
-	if (bRefresh)
+	if (m_ckEnableMainLog.GetCheck() == BST_CHECKED)
 	{
-		m_listMain.SetCurSel(m_listMain.GetCount() - 1);
-		m_listMain.SetCurSel(-1);
+		CString str = CTime::GetCurrentTime().Format(_T("%H:%M:%S "));
+		str.Append(sDisp);
+		m_listMain.AddString(str);
 
-		DisplayUpdatedTime();
+		if (bRefresh)
+		{
+			m_listMain.SetCurSel(m_listMain.GetCount() - 1);
+			m_listMain.SetCurSel(-1);
+
+			DisplayUpdatedTime();
+		}
 	}
 }
 
@@ -581,6 +589,9 @@ void CSendOrderDlg::OnReceiveTrData(LPCTSTR sScrNo, LPCTSTR sRQName, LPCTSTR sTr
 		if (m_bInitializing && lockBalance.Lock())
 		{
 			m_iBal = iBal;
+			m_iSumBuy	 = 0;
+			m_iSumSell	 = 0;
+			m_iSumFeeTax = 0;
 
 			lockBalance.Unlock();
 		}
@@ -676,6 +687,7 @@ void CSendOrderDlg::OnReceiveTrData(LPCTSTR sScrNo, LPCTSTR sRQName, LPCTSTR sTr
 	}
 	if (sTemp == _T("order stock"))
 	{
+		WARNING: see Documents/kiwoom_notes [20160225]
 		m_iOrdTrEventCnt++;
 		if (m_iOrdTrEventCnt == 2)
 			EndTr(0);
@@ -817,7 +829,10 @@ void CSendOrderDlg::OnReceiveChejanData(LPCTSTR _sGubun, long nItemCnt, LPCTSTR 
 
 								if (sOrdCat == _T("+매수"))
 								{
-									_int64 iDeltaB = (_int64)iOrdP * iOrdQ + (_int64)round ((_int64)iOrdP * iOrdQ * m_dBuyFee0);
+									_int64 iDeltaBRaw = (_int64)iOrdP * iOrdQ;
+									_int64 iDeltaBFee = (_int64)round ((_int64)iOrdP * iOrdQ * m_dBuyFee0);
+									_int64 iDeltaB = iDeltaBRaw + iDeltaBFee;
+
 									m_iBal -= iDeltaB;
 									
 									if (DISP_VERBOSE)
@@ -833,10 +848,13 @@ void CSendOrderDlg::OnReceiveChejanData(LPCTSTR _sGubun, long nItemCnt, LPCTSTR 
 										if (iOgOrdNo == m_pOrdNo[iCodeInd][iQInd])
 										{
 											int iOgOrdP = m_pOrdP[iCodeInd][iQInd];
-											_int64 iDeltaB = (_int64)(iOrdP - iOgOrdP) * iOrdQ + (_int64)round ((_int64)(iOrdP - iOgOrdP) * iOrdQ * m_dBuyFee0);
+											_int64 iDeltaBRaw = (_int64)(iOrdP - iOgOrdP) * iOrdQ;
+											_int64 iDeltaBFee = (_int64)round ((_int64)(iOrdP - iOgOrdP) * iOrdQ * m_dBuyFee0);
+											_int64 iDeltaB = iDeltaBRaw + iDeltaBFee;
+
 											m_iBal -= iDeltaB;
 
-											if (DISP_VERBOSE)
+											if (DISP_VERBOSE)	
 											{
 												if (iOrdP > iOgOrdP)
 													sDisp.Format(_T("Subtract balance %12I64d"), iDeltaB);
@@ -865,7 +883,10 @@ void CSendOrderDlg::OnReceiveChejanData(LPCTSTR _sGubun, long nItemCnt, LPCTSTR 
 								iOrdP = m_pOrdP[iCodeInd][iQInd];
 								if (sOrdCat == _T("매수취소"))
 								{
-									_int64 iDeltaB = (_int64)iOrdP * iOrdQ + (_int64)round ((_int64)iOrdP * iOrdQ * m_dBuyFee0);
+									_int64 iDeltaBRaw = (_int64)iOrdP * iOrdQ;
+									_int64 iDeltaBFee = (_int64)round ((_int64)iOrdP * iOrdQ * m_dBuyFee0);
+									_int64 iDeltaB = iDeltaBRaw + iDeltaBFee;
+
 									m_iBal += iDeltaB;
 
 									if (DISP_VERBOSE)
@@ -929,7 +950,10 @@ void CSendOrderDlg::OnReceiveChejanData(LPCTSTR _sGubun, long nItemCnt, LPCTSTR 
 							m_pOrdQ[iCodeInd][iQInd] = iOrdQ;
 							if (((sOrdCat == _T("+매수")) || (sOrdCat == _T("+매수정정"))) && (iOrdP > iDeltaP))
 							{
-								_int64 iDeltaB = (_int64)(iOrdP - iDeltaP) * iDeltaQ + (_int64)round ((_int64)(iOrdP - iDeltaP) * iDeltaQ * m_dBuyFee0);
+								_int64 iDeltaBRaw = (_int64)(iOrdP - iDeltaP) * iDeltaQ;
+								_int64 iDeltaBFee = (_int64)round ((_int64)(iOrdP - iDeltaP) * iDeltaQ * m_dBuyFee0);
+								_int64 iDeltaB = iDeltaBRaw + iDeltaBFee;
+
 								m_iBal += iDeltaB;
 
 								if (DISP_VERBOSE)
@@ -938,12 +962,25 @@ void CSendOrderDlg::OnReceiveChejanData(LPCTSTR _sGubun, long nItemCnt, LPCTSTR 
 									DisplayMain(sDisp, false);
 								}
 							}
+							if ((sOrdCat == _T("+매수")) || (sOrdCat == _T("+매수정정")))
+							{
+								_int64 iDeltaBRaw = (_int64)iDeltaP * iDeltaQ;
+								_int64 iDeltaBFee = (_int64)round ((_int64)iDeltaP * iDeltaQ * m_dBuyFee0);
+								
+								m_iSumBuy += iDeltaBRaw;
+								m_iSumFeeTax += iDeltaBFee;
+							}
 							if ((sOrdCat == _T("-매도")) || (sOrdCat == _T("-매도정정")))
 							{
-								_int64 iDeltaB = (_int64)iDeltaP * iDeltaQ - (  (_int64)round ((_int64)iDeltaP * iDeltaQ * m_dSelFee0) +
-																				(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax0) +
-																				(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax1) );
+								_int64 iDeltaBRaw = (_int64)iDeltaP * iDeltaQ;
+								_int64 iDeltaBFeeTax = ((_int64)round ((_int64)iDeltaP * iDeltaQ * m_dSelFee0) +
+														(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax0) +
+														(_int64)floor ((_int64)iDeltaP * iDeltaQ * m_dSelTax1) );
+								_int64 iDeltaB = iDeltaBRaw - iDeltaBFeeTax;
+
 								m_iBal += iDeltaB;
+								m_iSumSell += iDeltaBRaw;
+								m_iSumFeeTax += iDeltaBFeeTax;
 
 								if (DISP_VERBOSE)
 								{
@@ -1133,7 +1170,10 @@ UINT CSendOrderDlg::TCPServerThread(LPVOID pParam)
 						pThis->DisplayMsg(_T("TCPServer: Client connected"));
 						pThis->m_bConnected = true;
 						if (pThis->m_bLoggedIn && !pThis->m_bStarted)
+						{
 							pThis->m_btStart.EnableWindow(TRUE);
+							pThis->OnBnClickedButtonStart();
+						}
 						bWaitConn = false;
 					}
 					else
@@ -1174,6 +1214,9 @@ UINT CSendOrderDlg::TCPServerThread(LPVOID pParam)
 				closesocket(pThis->m_sockConn);
 				pThis->m_sockConn = -1;
 				bWaitConn = true;
+
+				if (CTime::GetCurrentTime().GetHour() >= 15)
+					pThis->OnBnClickedCancel();
 
 				break;
 			}
@@ -1313,7 +1356,7 @@ void CSendOrderDlg::SendOrder(LPCTSTR _sCommand)
 					do {
 						if (lRet == OP_ERR_ORD_OVERFLOW)
 						{
-							DisplayMsg(_T("SendOrder: Overflow"));
+							DisplayMain(_T("SendOrder: Order rate overflow"));
 							Sleep(OVERFLOW_WAIT_MS);
 						}
 						InitTr();
@@ -1363,7 +1406,7 @@ void CSendOrderDlg::SendOrder(LPCTSTR _sCommand)
 					do {
 						if (lRet == OP_ERR_ORD_OVERFLOW)
 						{
-							DisplayMsg(_T("SendOrder: Overflow"));
+							DisplayMain(_T("SendOrder: Order rate overflow"));
 							Sleep(OVERFLOW_WAIT_MS);
 						}
 						InitTr();
@@ -1451,7 +1494,7 @@ void CSendOrderDlg::SendOrder(LPCTSTR _sCommand)
 				do {
 					if (lRet == OP_ERR_ORD_OVERFLOW)
 					{
-						DisplayMsg(_T("SendOrder: Overflow"));
+						DisplayMain(_T("SendOrder: Order rate overflow"));
 						Sleep(OVERFLOW_WAIT_MS);
 					}
 					InitTr();
@@ -1525,7 +1568,7 @@ void CSendOrderDlg::SendOrder(LPCTSTR _sCommand)
 			if ((DISP_VERBOSE) && (nQOrd == 0))
 			{
 				sWord.Format(_T("SendOrder: No order found at price %d"), lPrice);
-				DisplayMsg(sWord);
+				DisplayMain(sWord);
 			}
 
 			for (int i = 0; i < nQOrd; i++)
@@ -1541,7 +1584,7 @@ void CSendOrderDlg::SendOrder(LPCTSTR _sCommand)
 				do {
 					if (lRet == OP_ERR_ORD_OVERFLOW)
 					{
-						DisplayMsg(_T("SendOrder: Overflow"));
+						DisplayMain(_T("SendOrder: Order rate overflow"));
 						Sleep(OVERFLOW_WAIT_MS);
 					}
 					InitTr();
@@ -1584,28 +1627,31 @@ int CSendOrderDlg::DisplayBalance()
 
 		sRQName = _T("account balance");
 		sTRCode = _T("OPW00001");
-		lRet = 0;
-		do {
-			if (lRet == OP_ERR_SISE_OVERFLOW)
-			{
-				DisplayMsg(_T("DisplayBalance: Overflow"));
-				Sleep(OVERFLOW_WAIT_MS);
-			}
-			InitTr();
-			theApp.m_cKHOpenAPI.SetInputValue(_T("계좌번호"), m_sAccNo);
-			theApp.m_cKHOpenAPI.SetInputValue(_T("비밀번호"), _T(""));
-			theApp.m_cKHOpenAPI.SetInputValue(_T("비밀번호입력매체구분"), _T("00"));
-			theApp.m_cKHOpenAPI.SetInputValue(_T("조회구분"), _T("1"));
-			lRet = theApp.m_cKHOpenAPI.CommRqData(sRQName, sTRCode, 0, m_sScrNo);
-		} while (lRet == OP_ERR_SISE_OVERFLOW);
 
-		if (m_bInitializing && (lRet != OP_ERR_NONE)) // password not entered
-		{
-			if (FCN_LOG) WriteFcnLog(_T("<< DisplayBalance"));
-			return -1;
-		}
+		do {
+			lRet = 0;
+			do {
+				if (lRet == OP_ERR_SISE_OVERFLOW)
+				{
+					DisplayMsg(_T("DisplayBalance: TR rate overflow"));
+					Sleep(OVERFLOW_WAIT_MS);
+				}
+				InitTr();
+				theApp.m_cKHOpenAPI.SetInputValue(_T("계좌번호"), m_sAccNo);
+				theApp.m_cKHOpenAPI.SetInputValue(_T("비밀번호"), _T(""));
+				theApp.m_cKHOpenAPI.SetInputValue(_T("비밀번호입력매체구분"), _T("00"));
+				theApp.m_cKHOpenAPI.SetInputValue(_T("조회구분"), _T("1"));
+				lRet = theApp.m_cKHOpenAPI.CommRqData(sRQName, sTRCode, 0, m_sScrNo);
+			} while (lRet == OP_ERR_SISE_OVERFLOW);
+
+			if (m_bInitializing && (lRet != OP_ERR_NONE)) // password not entered
+			{
+				if (FCN_LOG) WriteFcnLog(_T("<< DisplayBalance"));
+				return -1;
+			}
 	
-		WaitTr();
+			WaitTr(true);
+		} while (m_bInitializing && (m_bTimedOut || (m_iBal == 0)));
 
 
 		sRQName = _T("stock list");
@@ -1616,7 +1662,7 @@ int CSendOrderDlg::DisplayBalance()
 			do {
 				if (lRet == OP_ERR_SISE_OVERFLOW)
 				{
-					DisplayMsg(_T("DisplayStockList: Overflow"));
+					DisplayMsg(_T("DisplayStockList: TR rate overflow"));
 					Sleep(OVERFLOW_WAIT_MS);
 				}
 				InitTr();
@@ -1639,7 +1685,7 @@ int CSendOrderDlg::DisplayBalance()
 			do {
 				if (lRet == OP_ERR_SISE_OVERFLOW)
 				{
-					DisplayMsg(_T("DisplayOrderList: Overflow"));
+					DisplayMsg(_T("DisplayOrderList: TR rate overflow"));
 					Sleep(OVERFLOW_WAIT_MS);
 				}
 				InitTr();
@@ -1714,8 +1760,11 @@ int CSendOrderDlg::DisplayBalance()
 		m_listBal.AddString(_T("Stock list (exc. ord.)"));
 		for (unsigned int i = 0; i < m_nKRXCodes; i++)
 		{
-			sDisp.Format(_T("             {%06d} %8.0f (%2d)"), m_piKRXCodes[i], m_pPr[i], m_pStkCnt[i]);
-			m_listBal.AddString(sDisp);
+			if (m_pStkCnt[i] > 0)
+			{
+				sDisp.Format(_T("             {%06d} %8.0f (%2d)"), m_piKRXCodes[i], m_pPr[i], m_pStkCnt[i]);
+				m_listBal.AddString(sDisp);
+			}
 		}
 		m_listBal.AddString(_T(""));
 
@@ -1784,6 +1833,8 @@ long CSendOrderDlg::WaitTr(bool bTimeout)
 	sDisp.Format(_T("%2d"), ++m_nTrCntThisTick);
 	((CWnd*)GetDlgItem(IDC_STATIC_DISP_TRCNT))->SetWindowText(sDisp);
 
+	m_bTimedOut = false;
+
 	ULONGLONG tStart = GetTickCount64();
 	while (m_bLockTr) 
 	{ 
@@ -1810,6 +1861,7 @@ long CSendOrderDlg::WaitTr(bool bTimeout)
 		if (bTimeout && (GetTickCount64() - tStart >= ORD_TIMEOUT_MS))
 		{
 			DisplayMsg (_T("WaitTr: Timeout"));
+			m_bTimedOut = true;
 			EndTr (0);
 			break;
 		}
@@ -1927,7 +1979,7 @@ VOID CALLBACK CSendOrderDlg::TimerCallback(HWND hwnd, UINT uMsg, UINT_PTR idEven
 		lockBalance.Lock();
 		if (FCN_LOG) pThis->WriteFcnLog(_T(">> TimerCallback lock"));
 
-		sOut.Format(_T("/*\nb %d %I64d\n"), tFloor, pThis->m_iBal);
+		sOut.Format(_T("/*\nb %d %I64d %I64d %I64d %I64d\n"), tFloor, pThis->m_iBal, pThis->m_iSumBuy, pThis->m_iSumSell, pThis->m_iSumFeeTax);
 
 		for (unsigned int i = 0; i < pThis->m_nKRXCodes; i++)
 		{
