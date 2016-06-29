@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AgentKiwoom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AgentKiwoomDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KHOpenAPICtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\Security.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\NetAgent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\Catalog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\server\Broker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\server\NetServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\server\OrderBook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\ostream_format.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\sibyl_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\ReqType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\time_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\util\Clock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\util\Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\util\DispPrefix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\util\OstreamRedirector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\server\OrderBook_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\server\Kiwoom\Kiwoom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\server\Kiwoom\Kiwoom_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\server\Kiwoom\KiwoomAPI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\server\Kiwoom\TR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\securities\Security_KOSPI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\securities\Security_ETF.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\securities\Security_ELW.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenAPI_wrap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sibyl\util\toggle_win32_min_max.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AgentKiwoom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AgentKiwoomDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KHOpenAPICtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sibyl\util\Clock.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sibyl\util\Config.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sibyl\util\DispPrefix.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sibyl\server\Kiwoom\Kiwoom.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sibyl\server\Kiwoom\KiwoomAPI.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sibyl\server\Kiwoom\TR.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenAPI_wrap.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AgentKiwoom.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\AgentKiwoom.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\AgentKiwoom.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

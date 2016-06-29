@@ -1,6 +1,0 @@
-(1) Tools>Options>Text Editor>C/C++>Advanced>Fallback Location
-	Always Use Fallback Location - True
-	Do Not Warn If Fallback Location Used - True
-	Fallback Location - empty or something like C:\temp
-(2) Configuration Properties>Build Events>Post-Build Event
-	Command Line - rd /s /q $(Configuration)
