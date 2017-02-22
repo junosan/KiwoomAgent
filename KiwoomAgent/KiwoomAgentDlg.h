@@ -1,5 +1,20 @@
+/*
+   Copyright 2016 Hosang Yoon
 
-// AgentKiwoomDlg.h : 헤더 파일
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+// KiwoomAgentDlg.h : 헤더 파일
 //
 
 #pragma once
@@ -8,12 +23,12 @@
 #include "sibyl/server/Kiwoom/Kiwoom.h"
 #include "sibyl/server/NetServer.h"
 
-// CAgentKiwoomDlg 대화 상자
-class CAgentKiwoomDlg : public CDialogEx
+// CKiwoomAgentDlg 대화 상자
+class CKiwoomAgentDlg : public CDialogEx
 {
 // 생성입니다.
 public:
-    CAgentKiwoomDlg(CWnd* pParent = NULL);    // 표준 생성자입니다.
+    CKiwoomAgentDlg(CWnd* pParent = NULL);    // 표준 생성자입니다.
 
 // 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
@@ -25,7 +40,7 @@ public:
 
 // my stuff
 private:
-    static CAgentKiwoomDlg *this_;
+    static CKiwoomAgentDlg *this_;
     static sibyl::CSTR& TimeStr();
     void UpdateWindowTitle();
     void Launch();

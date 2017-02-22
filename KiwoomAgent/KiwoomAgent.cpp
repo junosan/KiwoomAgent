@@ -1,40 +1,55 @@
+/*
+   Copyright 2016 Hosang Yoon
 
-// AgentKiwoom.cpp : 응용 프로그램에 대한 클래스 동작을 정의합니다.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+// KiwoomAgent.cpp : 응용 프로그램에 대한 클래스 동작을 정의합니다.
 //
 
 #include "stdafx.h"
-#include "AgentKiwoom.h"
-#include "AgentKiwoomDlg.h"
+#include "KiwoomAgent.h"
+#include "KiwoomAgentDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
-// CAgentKiwoomApp
+// CKiwoomAgentApp
 
-BEGIN_MESSAGE_MAP(CAgentKiwoomApp, CWinApp)
+BEGIN_MESSAGE_MAP(CKiwoomAgentApp, CWinApp)
     ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
-// CAgentKiwoomApp 생성
+// CKiwoomAgentApp 생성
 
-CAgentKiwoomApp::CAgentKiwoomApp()
+CKiwoomAgentApp::CKiwoomAgentApp()
 {
     // TODO: 여기에 생성 코드를 추가합니다.
     // InitInstance에 모든 중요한 초기화 작업을 배치합니다.
 }
 
 
-// 유일한 CAgentKiwoomApp 개체입니다.
+// 유일한 CKiwoomAgentApp 개체입니다.
 
-CAgentKiwoomApp theApp;
+CKiwoomAgentApp theApp;
 
 
-// CAgentKiwoomApp 초기화
+// CKiwoomAgentApp 초기화
 
-BOOL CAgentKiwoomApp::InitInstance()
+BOOL CKiwoomAgentApp::InitInstance()
 {
     CWinApp::InitInstance();
 
@@ -69,7 +84,7 @@ BOOL CAgentKiwoomApp::InitInstance()
     rdCerr.Redirect(std::cerr, path + "\\msg.log");
     ///////////////////////////////////////////////////////////// custom end
 
-    CAgentKiwoomDlg dlg;
+    CKiwoomAgentDlg dlg;
     m_pMainWnd = &dlg;
     INT_PTR nResponse = dlg.DoModal();
     if (nResponse == IDOK)

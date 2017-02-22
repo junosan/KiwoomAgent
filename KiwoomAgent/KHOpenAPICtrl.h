@@ -1,3 +1,9 @@
+/*
+	Copyright 2015 Kiwoom Securities Co., Ltd.
+	
+	Wrapper class for Kiwoom Securities OpenAPI
+*/
+
 // KHOpenAPI.h  : Microsoft Visual C++로 만든 ActiveX 컨트롤 래퍼 클래스의 선언입니다.
 
 #pragma once

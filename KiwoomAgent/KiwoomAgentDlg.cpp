@@ -1,10 +1,25 @@
+/*
+   Copyright 2016 Hosang Yoon
 
-// AgentKiwoomDlg.cpp : 구현 파일
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+// KiwoomAgentDlg.cpp : 구현 파일
 //
 
 #include "stdafx.h"
-#include "AgentKiwoom.h"
-#include "AgentKiwoomDlg.h"
+#include "KiwoomAgent.h"
+#include "KiwoomAgentDlg.h"
 #include "afxdialogex.h"
 
 #include "OpenAPI_wrap.h"
@@ -19,12 +34,12 @@
 
 using namespace sibyl;
 
-// CAgentKiwoomDlg 대화 상자
+// CKiwoomAgentDlg 대화 상자
 
 // static
-CAgentKiwoomDlg* CAgentKiwoomDlg::this_ = nullptr;
+CKiwoomAgentDlg* CKiwoomAgentDlg::this_ = nullptr;
 
-CAgentKiwoomDlg::CAgentKiwoomDlg(CWnd* pParent /*=NULL*/)
+CKiwoomAgentDlg::CKiwoomAgentDlg(CWnd* pParent /*=NULL*/)
     : CDialogEx(IDD_AGENTKIWOOM_DIALOG, pParent),
       server(&kiwoom)
 {
@@ -47,7 +62,7 @@ CAgentKiwoomDlg::CAgentKiwoomDlg(CWnd* pParent /*=NULL*/)
                                 &GetChejanData );
 }
 
-void CAgentKiwoomDlg::DoDataExchange(CDataExchange* pDX)
+void CKiwoomAgentDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialogEx::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_KHOPENAPICTRL1, openAPI);
@@ -57,13 +72,13 @@ void CAgentKiwoomDlg::DoDataExchange(CDataExchange* pDX)
 // General member functions
 
 // static
-CSTR& CAgentKiwoomDlg::TimeStr() // "local_wall_clock/orderbook_time "
+CSTR& CKiwoomAgentDlg::TimeStr() // "local_wall_clock/orderbook_time "
 {
     static STR str;
 
     str = Clock::ms_to_HHMMSS(sibyl::clock.Now(), true);
 
-    const auto &kiwoom = static_cast<CAgentKiwoomDlg*>(this_)->kiwoom;
+    const auto &kiwoom = static_cast<CKiwoomAgentDlg*>(this_)->kiwoom;
     str += '/' + Clock::ms_to_HHMMSS((kiwoom.GetOrderBookTime() - kiwoom.GetTimeOffset()) * 1000, true);
     
     str += ' ';
@@ -72,7 +87,7 @@ CSTR& CAgentKiwoomDlg::TimeStr() // "local_wall_clock/orderbook_time "
 }
 
 // runs in a separate thread
-void CAgentKiwoomDlg::UpdateWindowTitle()
+void CKiwoomAgentDlg::UpdateWindowTitle()
 {
     while (true)
     {
@@ -82,7 +97,7 @@ void CAgentKiwoomDlg::UpdateWindowTitle()
 }
 
 // runs in a separate thread
-void CAgentKiwoomDlg::Launch()
+void CKiwoomAgentDlg::Launch()
 {
     m_bnRun.EnableWindow(false);
     if (true == kiwoom.Launch())
@@ -94,28 +109,28 @@ void CAgentKiwoomDlg::Launch()
     }
 }
 
-BEGIN_MESSAGE_MAP(CAgentKiwoomDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CKiwoomAgentDlg, CDialogEx)
     ON_WM_PAINT()
     ON_WM_QUERYDRAGICON()
-    ON_BN_CLICKED(IDC_BUTTON_EXIT, &CAgentKiwoomDlg::OnBnClickedButtonExit)
-    ON_BN_CLICKED(IDC_BUTTON_RUN, &CAgentKiwoomDlg::OnBnClickedButtonRun)
+    ON_BN_CLICKED(IDC_BUTTON_EXIT, &CKiwoomAgentDlg::OnBnClickedButtonExit)
+    ON_BN_CLICKED(IDC_BUTTON_RUN, &CKiwoomAgentDlg::OnBnClickedButtonRun)
 END_MESSAGE_MAP()
 
-// CAgentKiwoomDlg 메시지 처리기
+// CKiwoomAgentDlg 메시지 처리기
 
-void CAgentKiwoomDlg::OnOK()
+void CKiwoomAgentDlg::OnOK()
 {
     // Disable <enter> to close
     // CDialogEx::OnOK();
 }
 
-void CAgentKiwoomDlg::OnCancel()
+void CKiwoomAgentDlg::OnCancel()
 {
     // Disable <escape> to close
     // CDialogEx::OnCancel();
 }
 
-BOOL CAgentKiwoomDlg::OnInitDialog()
+BOOL CKiwoomAgentDlg::OnInitDialog()
 {
     CDialogEx::OnInitDialog();
 
@@ -137,7 +152,7 @@ BOOL CAgentKiwoomDlg::OnInitDialog()
     kiwoom.SetStateFile(theApp.path + "\\state.log");
     STR pathParent = theApp.path;
     pathParent.resize(pathParent.find_last_of('\\'));
-    kiwoom.ReadConfigFiles(theApp.path + "\\config.config", pathParent + "\\SaveData\\config.ini");
+    kiwoom.ReadConfigFiles(theApp.path + "\\config.config");//, pathParent + "\\SaveData\\config.ini");
 
     // Read last position from config.config
     auto &ssPos = config.Get("POS");
@@ -157,7 +172,7 @@ BOOL CAgentKiwoomDlg::OnInitDialog()
     tServer.detach();
     
     // Launch title updater
-    std::thread tTitleUpdater(&CAgentKiwoomDlg::UpdateWindowTitle, this);
+    std::thread tTitleUpdater(&CKiwoomAgentDlg::UpdateWindowTitle, this);
     tTitleUpdater.detach();
 
     // Open login window
@@ -169,13 +184,13 @@ BOOL CAgentKiwoomDlg::OnInitDialog()
     return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
-void CAgentKiwoomDlg::OnBnClickedButtonRun()
+void CKiwoomAgentDlg::OnBnClickedButtonRun()
 {
-    std::thread tLaunch(&CAgentKiwoomDlg::Launch, this);
+    std::thread tLaunch(&CKiwoomAgentDlg::Launch, this);
     tLaunch.detach();
 }
 
-void CAgentKiwoomDlg::OnBnClickedButtonExit()
+void CKiwoomAgentDlg::OnBnClickedButtonExit()
 {
     // Save window position
     RECT rect;
@@ -199,7 +214,7 @@ void CAgentKiwoomDlg::OnBnClickedButtonExit()
 // 대화 상자에 최소화 단추를 추가할 경우 아이콘을 그리려면
 //  아래 코드가 필요합니다.  문서/뷰 모델을 사용하는 MFC 응용 프로그램의 경우에는
 //  프레임워크에서 이 작업을 자동으로 수행합니다.
-void CAgentKiwoomDlg::OnPaint()
+void CKiwoomAgentDlg::OnPaint()
 {
     if (IsIconic())
     {
@@ -226,20 +241,20 @@ void CAgentKiwoomDlg::OnPaint()
 
 // 사용자가 최소화된 창을 끄는 동안에 커서가 표시되도록 시스템에서
 //  이 함수를 호출합니다.
-HCURSOR CAgentKiwoomDlg::OnQueryDragIcon()
+HCURSOR CKiwoomAgentDlg::OnQueryDragIcon()
 {
     return static_cast<HCURSOR>(m_hIcon);
 }
 
-BEGIN_EVENTSINK_MAP(CAgentKiwoomDlg, CDialogEx)
-    ON_EVENT(CAgentKiwoomDlg, IDC_KHOPENAPICTRL1, 5, CAgentKiwoomDlg::OnEventConnect, VTS_I4)
-    ON_EVENT(CAgentKiwoomDlg, IDC_KHOPENAPICTRL1, 1, CAgentKiwoomDlg::OnReceiveTrData, VTS_BSTR VTS_BSTR VTS_BSTR VTS_BSTR VTS_BSTR VTS_I4 VTS_BSTR VTS_BSTR VTS_BSTR)
-    ON_EVENT(CAgentKiwoomDlg, IDC_KHOPENAPICTRL1, 2, CAgentKiwoomDlg::OnReceiveRealData, VTS_BSTR VTS_BSTR VTS_BSTR)
-    ON_EVENT(CAgentKiwoomDlg, IDC_KHOPENAPICTRL1, 4, CAgentKiwoomDlg::OnReceiveChejanData, VTS_BSTR VTS_I4 VTS_BSTR)
-    ON_EVENT(CAgentKiwoomDlg, IDC_KHOPENAPICTRL1, 3, CAgentKiwoomDlg::OnReceiveMsg, VTS_BSTR VTS_BSTR VTS_BSTR VTS_BSTR)
+BEGIN_EVENTSINK_MAP(CKiwoomAgentDlg, CDialogEx)
+    ON_EVENT(CKiwoomAgentDlg, IDC_KHOPENAPICTRL1, 5, CKiwoomAgentDlg::OnEventConnect, VTS_I4)
+    ON_EVENT(CKiwoomAgentDlg, IDC_KHOPENAPICTRL1, 1, CKiwoomAgentDlg::OnReceiveTrData, VTS_BSTR VTS_BSTR VTS_BSTR VTS_BSTR VTS_BSTR VTS_I4 VTS_BSTR VTS_BSTR VTS_BSTR)
+    ON_EVENT(CKiwoomAgentDlg, IDC_KHOPENAPICTRL1, 2, CKiwoomAgentDlg::OnReceiveRealData, VTS_BSTR VTS_BSTR VTS_BSTR)
+    ON_EVENT(CKiwoomAgentDlg, IDC_KHOPENAPICTRL1, 4, CKiwoomAgentDlg::OnReceiveChejanData, VTS_BSTR VTS_I4 VTS_BSTR)
+    ON_EVENT(CKiwoomAgentDlg, IDC_KHOPENAPICTRL1, 3, CKiwoomAgentDlg::OnReceiveMsg, VTS_BSTR VTS_BSTR VTS_BSTR VTS_BSTR)
 END_EVENTSINK_MAP()
 
-void CAgentKiwoomDlg::OnEventConnect(long nErrCode)
+void CKiwoomAgentDlg::OnEventConnect(long nErrCode)
 {
     if (nErrCode == 0)
     {
@@ -273,14 +288,14 @@ void CAgentKiwoomDlg::OnEventConnect(long nErrCode)
     }
 }
 
-void CAgentKiwoomDlg::OnReceiveTrData(LPCTSTR sScrNo, LPCTSTR sRQName, LPCTSTR sTrCode, LPCTSTR sRecordName, LPCTSTR sPrevNext, long nDataLength, LPCTSTR sErrorCode, LPCTSTR sMessage, LPCTSTR sSplmMsg)
+void CKiwoomAgentDlg::OnReceiveTrData(LPCTSTR sScrNo, LPCTSTR sRQName, LPCTSTR sTrCode, LPCTSTR sRecordName, LPCTSTR sPrevNext, long nDataLength, LPCTSTR sErrorCode, LPCTSTR sMessage, LPCTSTR sSplmMsg)
 {
     // debug_msg("[TR] Received " + STR(sRQName) + " " + STR(sTrCode) + " " + STR(sPrevNext));
     TR::Receive(sRQName, sTrCode, (sPrevNext == STR("2") ? TR::State::carry : TR::State::normal));
         // Note: sPrevNext == "" may also arrive, and std::stol("") hangs
 }
 
-void CAgentKiwoomDlg::OnReceiveRealData(LPCTSTR sRealKey, LPCTSTR sRealType, LPCTSTR sRealData)
+void CKiwoomAgentDlg::OnReceiveRealData(LPCTSTR sRealKey, LPCTSTR sRealType, LPCTSTR sRealData)
 {
     switch (Map_sRealType(sRealType))
     {
@@ -299,7 +314,7 @@ void CAgentKiwoomDlg::OnReceiveRealData(LPCTSTR sRealKey, LPCTSTR sRealType, LPC
     }
 }
 
-void CAgentKiwoomDlg::OnReceiveChejanData(LPCTSTR sGubun, long nItemCnt, LPCTSTR sFIdList)
+void CKiwoomAgentDlg::OnReceiveChejanData(LPCTSTR sGubun, long nItemCnt, LPCTSTR sFIdList)
 {
     // debug_msg("[Chejan]");
 
@@ -316,7 +331,7 @@ void CAgentKiwoomDlg::OnReceiveChejanData(LPCTSTR sGubun, long nItemCnt, LPCTSTR
     }
 }
 
-void CAgentKiwoomDlg::OnReceiveMsg(LPCTSTR sScrNo, LPCTSTR sRQName, LPCTSTR sTrCode, LPCTSTR sMsg)
+void CKiwoomAgentDlg::OnReceiveMsg(LPCTSTR sScrNo, LPCTSTR sRQName, LPCTSTR sTrCode, LPCTSTR sMsg)
 {
     CSTR &str = Map_sMsg(sMsg);
     if (str.empty() == false)

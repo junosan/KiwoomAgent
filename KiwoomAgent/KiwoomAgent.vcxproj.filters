@@ -15,15 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="AgentKiwoom.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AgentKiwoomDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -108,14 +99,14 @@
     <ClInclude Include="sibyl\util\toggle_win32_min_max.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="KiwoomAgentDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KiwoomAgent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AgentKiwoom.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentKiwoomDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -143,20 +134,26 @@
     <ClCompile Include="OpenAPI_wrap.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KiwoomAgentDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KiwoomAgent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="AgentKiwoom.rc">
+    <ResourceCompile Include="KiwoomAgent.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\AgentKiwoom.rc2">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="res\AgentKiwoom.ico">
+    <Image Include="res\KiwoomAgent.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\KiwoomAgent.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
